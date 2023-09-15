@@ -171,6 +171,7 @@
     // 如果object可能不存在某个属性，可以设置一个默认值(不设置的话就是undefined)
     let {name, ip:true} = person;// name = 小明   ip = true
 */
+//js中的函数和方法特别需要注意this指针的指向
 //在js中也是使用this指向当前对象,如果在全局函数中使用this，指向window对象,小心下面这种情况。
 /*
     var xiaoming = {
