@@ -12,7 +12,7 @@
 
 //js有自己的回收机制，即使是使用new创建的对象也不需要手动释放
 //如果想要判断数组是否越界可以使用undefine来判断if(array[3] === undefine),那么数组越界
-//js中的对象就是map，dict但是其中的key都是string类型
+//js中的对象就是其它语言中的 map/dict 但是其中的key都是string类型
 //对于js中的块的理解，类似于作用域，但是可以随时随地使用{}获取一个块,if,for的{}也是一个块
 /*js中var,let,const:
     使用var申明的变量可以在其它块中使用,但注意，只能是在用一个函数中跨块，例如在函数func()中定义的不能在main()函数中使用
@@ -53,14 +53,14 @@
 //
 //js中也可以使用for(var i in object),和python类似
 //
-//js中的map使用二维数组初始化var m = new Map([['Michael', 95], ['Bob', 75], ['Tracy', 85]]);或者初始化一个空map： var m = new Map();
-//js中的map使用get,set,delete的函数操作值,不能直接使用下标操作
+//js中的Map使用二维数组初始化var m = new Map([['Michael', 95], ['Bob', 75], ['Tracy', 85]]);或者初始化一个空Map： var m = new Map();
+//js中的Map使用get,set,delete的函数操作值,不能直接使用下标操作
 //
 //set使用 一维数组初始化，或者直接定义为空
 //使用add,delete操作其中的元素
-//ps: map和set的初始化方式比较固定(二位数组/一维数组或者为空)不想c++那么自由
+//ps: Map和Set的初始化方式比较固定(二位数组/一维数组或者为空)不想c++那么自由
 //
-//js中使用iterable便利set,map或者array(array当然也可以用下标遍历)
+//js中使用iterable便利Set,Map或者array(array当然也可以用下标遍历)
 //在js中完全可以将数组看作一个object，下标就是key，下标对应的元素就是value。
 //使用"for in"其实遍历的属性名称(可以理解成key),例如：
 /*
@@ -89,7 +89,7 @@
         console.log(element + ', index = ' + index);
     });
 */
-//set回调函数的前2个参数都是元素本身，map的回调函数参数是value,key,map
+//set回调函数的前2个参数都是元素本身，Map的回调函数参数是value,key,Map
 //
 //js中，定义函数的方式: function + ${函数名}(${参数列表}){${函数体}}
 //js中的匿名函数可以直接赋值给一个对象,类似c++中的std::function<>
@@ -205,3 +205,101 @@
     };
 */
 // 虽然有这样的作用，但是暂时还没想到这有啥用(或许就在于不修改源码的情况下可以将原有的函数封装？这里使用apply的意义在于提心之后调用某些函数可能需要指定this指向？)
+// -------------------高阶函数-----------------------
+//js中的高阶函数就是使用函数作为另一个函数的参数(类似与std::function或者函数指针)
+//(注意,前面的Map都是一个数据结构'm'需要大写)js中的map方法,map方法定义在array中,往map中传入一个函数，遍历数组中的每个元素都执行该函数,将结果返回给另一个数组，如下：
+/*
+    var f = function (x) {
+        return x * x;
+    };
+
+    var arr = [1, 2, 3, 4, 5, 6, 7, 8, 9];
+    var result = [];
+    for (var i=0; i<arr.length; i++) {
+        result.push(f(arr[i]));
+    }
+*/
+//parseInt()的第二个参数是进制，map()自动传入的第二个参数是下标
+//----https://www.liaoxuefeng.com/wiki/1022910821149312/1024322552460832(有空可以把这也的几个练习多写几遍，熟练一下)
+//
+//filter函数,接收一个回调函数和map类似，但是回调函数的返回值应该return true/false，用于过滤数组。回调函数自动接收参数 element,index,self,  如下：
+/*
+    arr = ['apple', 'strawberry', 'banana', 'pear', 'apple', 'orange', 'orange', 'strawberry'];
+    r = arr.filter(function (element, index, self) {
+    return self.indexOf(element) === index;});  //apple,strawberry,banana,pear,orange
+*/
+//
+//-------sort------------
+//js中的sort很奇怪！！！！！首先会将数组中的元素转化为string然后再根据ASCII排序,所以就会出现下面的情况
+/*
+    ['Google', 'apple', 'Microsoft'].sort(); // ['Google', 'Microsoft", 'apple']   //因为小写‘a’的ASCII码大于大写字母
+
+    // 无法理解的结果:
+    [10, 20, 1, 2].sort(); // [1, 10, 2, 20] // 先转化成'10'和'2'而'1'<'2'所以10排在2之前
+*/
+// 值得注意的数组排序会直接修改原数组,并且sort中传入自定义的比较函数时,比较函数应该的返回值不是 true/false 而应该是 正数/负数,如下：
+/*
+        return x-y; // 从小到大排序
+        return y-x; // 从大到小排序
+*/
+// js中数组的sort并不一定是使用哪种算法,例如在chrome的v8引擎中，n<10使用插入排序，>10使用快排
+// js中的array还提供了多种高级函数，例如every(判断数组中的所有元素是都都满足传入的方法),find(是否存在满足传入的方法的元素),findIndex(和find类似,但是找到返回下标，没找到返回-1)，forEach(和map,set的forEach类似，用于遍历数组)
+//
+//-----------------------------------------闭包------------------------------------------------
+// 对于闭包浅浅的理解
+// 1,闭包的操作就是在一个函数中再封装一个函数，然后顶层函数带着参数a一起赋值给一个变量,此时，使用改变量调用函数，调用的就是底层函数，底层函数依旧可以使用参数a，并且a已经固定了。如下：
+/*
+    function lazy_sum(arr) {
+        var sum = function () {
+            return arr.reduce(function (x, y) {
+                return x + y;
+            });
+        }
+        return sum;
+    }
+    var f = lazy_sum([1, 2, 3, 4, 5]); // function sum()
+    f(); // 15
+*/
+// 我目前理解起来这样闭包的作用就是可以用来存储变量
+//  闭包的原理之一就是虽然出了作用域，但是因为一直引用了其中的变量，所以该变量占用的内存空间一直没有被释放!!!!!!!!!!
+//  ----------立即执行函数-------------
+/**
+    (function (x) {
+        return x * x;
+    })(3);
+ */
+// 定义一个匿名函数： 使用'()'封装起来,然后理解接一个'()'指定参数
+/*
+    let f = function (x) {
+        console.log(x)
+        return x * x;
+    }(100)
+    console.log(`f = ${f}`) // 10000
+*/
+// 其作用就是理解执行一个函数，并将函数的结果返回给变量
+// 闭包的神奇应用之一------------https://www.liaoxuefeng.com/wiki/1022910821149312/1023021250770016#0(脑洞大开部分)
+/*
+    // 定义数字0:
+    var zero = function (f) {
+        return function (x) {
+            return x;
+        }
+    };
+
+    // 定义数字1:
+    var one = function (f) {
+        return function (x) {
+            return f(x);
+        }
+    };
+
+    // 定义加法:
+    function add(n, m) {
+        return function (f) {
+            return function (x) {
+                return m(f)(n(f)(x)); // 这里n(f)(x)的理解并不是立即执行函数！！！！虽然将函数赋值给一个变量有点像#define但并不是！！！！
+                                      // 这里应该理解成"n(f)"的返回值还是一个函数"x"作为"n(f)返回的函数"的参数传入！！！！
+            }
+        }
+    }
+*/
