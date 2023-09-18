@@ -124,7 +124,7 @@
 //小心js会自动在每一行的最后加上';所以有时候需要小心语义被改变,特别是在return的时候
 //
 //JavaScript的函数可以嵌套，此时，内部函数可以访问外部函数定义的变量，反过来则不行
-//js的函数中有 "变量提升" 特性: 会将函数体内部的变量声明提升，但是并不会提升，所以有了一下结果
+//js的函数中有 "变量提升" 特性: 会将函数体内部的变量声明提升，但是并不会提升，所以有了一下结果-------更新：只有使用var定义的变量才会有变量提升特性,但是,var关键字在某个版本中已经被弃用了
 /*
     function foo() {
         var y; // 提升变量y的申明，此时y为undefined
@@ -302,4 +302,124 @@
             }
         }
     }
+*/
+//----------------Arrow Function----------------------
+//(参数)  => {语句}   //其中，如果语句比较简单，甚至可以不需要外面的'{}'，例如：
+//   x => x*x   等价于：
+//  function(x){
+//    return x * x;
+//}
+// 但是值得注意的是如果是返回一个object，需要使用'()',例如:'({foo: x})'不然可能无法区分
+// !!!!!!箭头函数的this指针强制指向调用的object,无法使用reply后者call修改
+// 目前对于this指针还是有点疑惑，希望后续随着看的代码的增加，能够改善
+//---------------this-----------------------
+// 1,无闭包函数：谁调用function,this指向谁
+// 2,使用call调用,reply调用函数值，会将第一个参数的转化为对象，'null'和'undefined'会被转化为全局对象
+// 3,在特定情况下，想要完全避免this指针的只想问题，可以使用bind绑定this，之后无论如何调用this指针都是不变的(bind只有第一次生效)
+// https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/this#this_%E5%92%8C%E5%AF%B9%E8%B1%A1%E8%BD%AC%E6%8D%A2
+// this作用：
+//      有了this指针,我们可以在函数中判断是谁调用了本函数(在js中，函数可以先使用再定义)
+// this暂时到这里结束，后续遇到更多的代码有问题再深入探究
+//
+// --------------generator-----------------
+// 用于记录函数运行时的某些中间状态(使得函数有多个返回值)，基础语法:
+/*
+    function* foo(x) {
+        yield x + 1;
+        yield x + 2;
+        return x + 3;
+    }
+*/
+// 直接调用一个generator和调用函数不一样，fib(5)仅仅是创建了一个generator对象，还没有去执行它。调用generator对象有两个方法，一是不断地调用generator对象的next()方法
+// 返回值是一个对象，其中有'value'和'done'2个元素，if(done === false) 'value'是yield的返回值,否则'value'是return的返回值，注意：当'done'===true后，不能再调用next()
+//
+//------------------js一切皆对象---------------------
+// 使用typeof可以看出null,array,{}的类型都是'object'
+// 不要使用new Number(),new Boolean(),new String()创建包装对象(创建出来的包装对象类型变成了'object')
+// 判断Array使用Array.isArray(arr);
+// 将其他类型转化成String类型使用String()或者toString()方法('null'和'undefined'没有toString方法！！！,Number也不能直接使用123.toString,应该是123..String或者(123).toString)
+//   上面为啥？别问，问就是规定！！！！！！！！！！！！！！(因为js中number没有细分int,float等，直接123.会将'.'认为是小数点。。。。)
+//
+//---------------------------------Date----------------------------------
+/*
+    var now = new Date();
+    now; // Wed Jun 24 2015 19:49:22 GMT+0800 (CST)
+    now.getFullYear(); // 2015, 年份
+    now.getMonth(); // 5, 月份，注意月份范围是0~11，5表示六月
+    now.getDate(); // 24, 表示24号
+    now.getDay(); // 3, 表示星期三
+    now.getHours(); // 19, 24小时制
+    now.getMinutes(); // 49, 分钟
+    now.getSeconds(); // 22, 秒
+    now.getMilliseconds(); // 875, 毫秒数
+    now.getTime(); // 1435146562875, 以number形式表示的时间戳
+*/
+// 注意，now.getMonth() 是以0开始的！！！！也就是说如果是1月，那么输出结果是0 (主打离谱)
+// var d = new Date(2015, 5, 19, 20, 15, 30, 123); 或者 new Date(1435146562875) // 使用时间戳
+// js中number的取值范围是2的53次方，如需超过，可以使用big-integer或者使用数组存储
+// 解析符合ISO 8601的时间格式
+// var d = Date.parse('2015-06-24T19:49:22.875+08:00'); // 返回值是一个时间戳(parse解析时传入的月份从1开始)
+// Date对象还有以下成员函数
+// toLocaleString() // 本地时间   toUTCString() // UTC时间
+// 因为时间戳是一定的，所以传输时使用时间戳
+//
+// -------------------RegExp-----------------
+// 定义正则表达式pattern:
+/*
+    var re1 = /ABC\-001/;
+    var re2 = new RegExp('ABC\\-001'); //使用这种方式一定记得特殊字符要转义
+*/
+// 使用test()方法判断是否匹配，例如
+/*
+    var re = /^\d{3}\-\d{3,8}$/;
+    re.test('010-12345'); // true
+    re.test('010-1234x'); // false
+    re.test('010 12345'); // false
+*/
+// 使用exec()方法提取字串，例如：
+/*
+    var re = /^(\d{3})-(\d{3,8})$/;
+    re.exec('010-12345'); // ['010-12345', '010', '12345'] //成功返回数组，下标0是匹配的字符串，后续是匹配的子串
+    re.exec('010 12345'); // null                          //失败返回null
+*/
+// '\d+'是贪婪模式，'\d+?'是非贪婪模式(加个'?')
+// 正则表达式还有多种模式：'g'全局匹配(类似于搜索)，'i'忽略大小写， 'm'多行匹配
+// 除了以上介绍的，还有很多，贪多嚼不烂，还是以后慢慢积累(总体来说，类似于python的re)
+//
+// -----------------------JSON------------------------
+// json中的字符串和object的建都必须使用""  (一定是'UTF-8')
+// js中的object通过序列化成JSON格式用来传递Object信息
+// JSON.stringify(${Object}) 将Object序列化成string
+// 序列化Object的时候,一般的函数,undefined会被忽略，如果出现在数组中会被转化为null,如果单独转化一个函数或者undefined直接返回undefined
+// JSON.stringify(${object}, function/Array, ' ')   JSON.stringify(xiaoming, null, '  ');
+// 参数解释第一个参数是待序列化的Object, 第二个参数是筛选信息(数组或者函数,数组的话只输出数组中的元素,函数的话将所有元素都执行函数,会自动往函数中传入'key','value'2个参数)，第三个参数是用来控制输出格式
+// 除了使用上述三个参数序列化Object，还可以再Object中定义toJson函数(key='toJSON',value=一个自定义function),例如:
+/*
+    var xiaoming = {
+        name: '小明',
+        age: 14,
+        gender: true,
+        height: 1.65,
+        grade: null,
+        'middle-school': '\"W3C\" Middle School',
+        skills: ['JavaScript', 'Java', 'Python', 'Lisp'],
+        toJSON: function () {
+            return { // 只输出name和age，并且改变了key：
+                'Name': this.name,
+                'Age': this.age
+            };
+        }
+    };
+    JSON.stringify(xiaoming); // '{"Name":"小明","Age":14}'
+*/
+// 反序列化，JSON.parse(str,function())
+// 第一个参数是待反序列化的string,第二个参数是一个函数，用于转化解析出来的属性,例如：
+/*
+    var obj = JSON.parse('{"name":"小明","age":14}', function (key, value) {
+        if (key === 'name') {
+            return value + '同学';
+        }
+        return value;
+    });
+    console.log(JSON.stringify(obj)); // {name: '小明同学', age: 14}
 */
