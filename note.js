@@ -423,3 +423,99 @@
     });
     console.log(JSON.stringify(obj)); // {name: '小明同学', age: 14}
 */
+// --------------------------------------面对对象编程---------------------------------
+// js中的面向对象不同于其他语言，其他语言一般都是类和实例。但是再js中，没有类和实例的概念
+// js中，创建出来的任何变量都是一个对象，所以也就不存在类。但是我们可以使用let x = Object.create(${A})创建出来的变量x可以理解成ObjectA的实例，在js中，A称作x的原型,还可以直接给x.__proto__(一般不建议这样使用，还是使用Object.create())赋值，修改其原型
+// function也是一个Object
+// 原型链:如果使用Obj.xxx会在当前对象中去找，如果没找到会沿着原型链往上找，如果直到Object.prototype还没有找到'xxx'返回undefined
+// 例如：
+/*
+    var arr = [1, 2, 3];
+    arr ----> Array.prototype ----> Object.prototype ----> null //原型链
+    // Array.prototype定义了indexOf()、shift()等方法，因此你可以在所有的Array对象上直接调用这些方法。
+*/
+// -----------构造函数----------------
+// 写法就是一个普通函数，但是使用new来调用该函数，那么就会返回一个对象,例如：
+/*
+    function Student(name) {
+        this.name = name;
+        this.hello = function () {
+            alert('Hello, ' + this.name + '!');
+        }
+    }
+    var xiaoming = new Student('小明'); // xiaoming ----> Student.prototype ----> Object.prototype ----> null(原型链) //可以认为xiaoming继承了Student
+    xiaoming.name; // '小明'
+    xiaoming.hello(); // Hello, 小明!
+    /*
+        xiaoming.constructor === Student.prototype.constructor; // true
+        Student.prototype.constructor === Student; // true
+
+        Object.getPrototypeOf(xiaoming) === Student.prototype; // true
+
+        xiaoming instanceof Student; // true
+    *\/  https://www.liaoxuefeng.com/wiki/1022910821149312/1023022043494624#0(具体看这里吧。。。)
+*/
+// 为了避免忘记写new，可以将创建新对象包装成一个函数
+// A instanceof B 判断A是不是继承自B(A的原型链上是否包含B)
+/*
+    function inherits(Child, Parent) {
+        var F = function () {};
+        F.prototype = Parent.prototype;
+        Child.prototype = new F();
+        Child.prototype.constructor = Child;
+    }
+*/
+// 让Child继承Parent
+// ---------------class---------------关键字！！！！
+// 可以和其他语言一样，直接使用class关键字定义一个类，并且使用extends继承其他类
+// 但是需要注意的是，构造函数同意命名constructor(){}，并在其中使用super()构造父类(不论代码中是否显示定义constructor方法，编译器会默认加上，并且调用super)
+// class中定义的类方法不需要使用function关键字
+//
+//------------------------------深入原型和闭包---------------------------------
+// https://www.cnblogs.com/wangfupeng1988/p/3977924.html
+// 函数就是一种对象，但是函数和对象也不完全一样。
+// 对象都以说都是由函数创造出来的！！！！(无论是使用'{}','[]'等等创建出来的对象,数组(都可以看作对象)都是通过调用Object(),Array()函数创建出来的)
+// 每一个函数A都有一个prototype属性(都有一个key为prototype),prototype的value是一个对象,其中默认只有constructor()函数，指向函数A本身(我们可以手动修改某个函数的prototype中的属性)
+// 如果对象fn是new调用一个function A创建出来的，那么fn可以调用function A的prototype中的元素,这是因为对象fn有一个__proto__属性，并且 fn.__proto__ === A.prototype !!!(即，每个对象都有一个__proto__属性，指向创建该对象的函数的prototype)
+// 对象的原型链最上层是Object.prototype，并且Object.prototype(也是一个对象)指向null !!!!!!!!!!!!!!!
+// 问题又出来了，函数也是一个对象，那么函数由什么函数创建？-----答案是Function()函数 !!!!!!!!!!!!!!!!!! (需要注意的是,Funtion也是一个函数，所以Function中也有一个__proto__指向Function自身的prototype)
+// instanceof表达是是一种，继承/原型链的关系，如果A instanceof B,A沿着__proto__出发，如果能一直找到B.prototype，那么返回true，否则为false
+// 原型链就是一个对象随着__proto__一直向上这条线路
+// 想要判断一个属性是对象本身的还是其原型链上的,可以使用hasOwnProperty()(存在与Object.prototype中)
+// js中的对象非常自由，我们可以在不修改源码的前提下，直接修改各种函数，属性
+//
+// ------------js代码执行前的准备工作(执行上下文)------------------------
+// 变量，函数表达式------声明，默认赋值为undefined
+// this--------赋值
+// 函数声明--------赋值
+// -----------------函数--------------
+// 函数在函数体的语句执行之前就已经给arguments和函数的参数赋值,函数每调用一次就会产生一个新的执行上下文
+// 函数在定义的时候就已经确定了函数体内部自由变量的作用域，如下：
+/*
+    var a=10;
+    function fn(){
+        console.log(a);
+    }
+    function bar(f){
+        var a=20;
+        f();
+    }
+    bar(fn);
+*/
+// 注意，构造函数的首字母需要大写(规定，在有些编译器下如果调用该函数没有使用new，编译器可以帮我们debug)
+// ----------------------this---------------------
+// 在函数中this到底取何值，是在函数真正被调用执行的时候确定的，函数定义的时候确定不了
+//
+// 情况1：如果函数作为构造函数用，那么其中的this就代表它即将new出来的对象。
+// 情况2：如果函数作为对象的一个属性时，并且作为对象的一个属性被调用时，函数中的this指向该对象(如果将对象的属性函数传递给一个变量，然后再通过变量调用该函数,那么this还是指向window)
+// 情况3：函数用call或者apply调用,this的值指向传入的对象
+// 情况4：全局 & 调用普通函数,this指向window(其中，如果是在一个函数A中再定义一个函数B，那么再函数A中直接调用函数B，B中的this也是指向window，B一样只是个普通函数)
+// 情况5：构造函数的prototype中的this还是指向当前对象的值(其实，不仅仅是构造函数的prototype，即便是在整个原型链中，this代表的也都是当前对象的值)
+//
+// ---------------------执行上下文栈---------------------
+// 差不多就是调用函数使用系统栈，函数执行入栈，执行结束出栈
+//  ------------------闭包------------------
+// 一般来说是2情况：1,函数作为返回值  2,函数作为参数传递
+//
+// -------------Array-----------再更新
+// 1,使用[]指定下标，要求0<=index<length,使用.at(),index和python类似允许正数和负数
